@@ -9,21 +9,21 @@ pub fn cin(comptime T: type) !T {
 
     const delimiter = if(@import("builtin").os.tag == .windows) '\r' else '\n';
 
-    const line: []const u8 = try stdin.readUntilDelimiterAlloc(allocator, delimiter, 512);
+    const line: [] u8 = try stdin.readUntilDelimiterAlloc(allocator, delimiter, 512);
     defer allocator.free(line);
 
-    const info = @TypeOf(T);
+    // const info = @typeInfo(T);
 
-    const s = switch(info){
-        u32 => std.fmt.parseInt(T, line, 10),
-        f32 => std.fmt.parseFloat(T, line),
-        []const u8 => line,
-        else => unreachable,
-    };
+    // return switch(info){
+    //     .Int => std.fmt.parseInt(T, line, 10),
+    //     .Float => std.fmt.parseFloat(T, line),
+    //     .Pointer => line,
+    //     else => unreachable,
+    // };
 
-    std.log.info("{d}", .{s});
+    std.log.info("{s}", .{line});
 
-    return s;
+    return line;
 
     // return "10";
 
@@ -36,8 +36,7 @@ pub fn cin(comptime T: type) !T {
 }
 
 pub fn main() anyerror!void {
-    // std.log.info("All your codebase are belong to us.", .{});
-    std.log.info("{s}", .{try cin(u32)});
+    std.log.info("{s}", .{try cin([]const u8)});
 }
 
 // test "basic test" {

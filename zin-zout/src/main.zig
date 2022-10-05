@@ -1,35 +1,36 @@
 const std = @import("std");
 
-
-
-pub fn cin(comptime T: type) !T {
+pub fn zin(allocator: std.mem.Allocator, comptime T: type) !T {
     const stdin = std.io.getStdIn().reader();
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
 
     const delimiter = if (@import("builtin").os.tag == .windows) '\r' else '\n';
 
     const line = try stdin.readUntilDelimiterAlloc(allocator, delimiter, 512);
 
-    defer {
-        allocator.free(line);
-        const leaked = gpa.deinit();
-        if (leaked) @panic("GPA leak");
-    }
-
     return switch(@typeInfo(T)){
         .Int => try std.fmt.parseInt(T, line, 10),
         .Float => try std.fmt.parseFloat(T, line),    
+        .Pointer => line,
         else => unreachable,
     };
 }
 
-pub fn main() anyerror!void {
-    const out = try cin(u32);
+pub fn zout(comptime format: []const u8, args: anytype) !void {
+    const stdout = std.io.getStdOut();
 
-    std.log.info("{d}", .{out});
+    try stdout.writer().print(format, args);
 }
 
-// test "basic test" {
-//     try std.testing.expectEqual(10, 3 + 7);
-// }
+pub fn main() anyerror!void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
+    const output = try zin(allocator, []const u8);
+    try zout("{s}", .{output});
+
+    defer {
+        allocator.free(output);
+        const leaked = gpa.deinit();
+        if (leaked) @panic("GPA leak");
+    }
+}

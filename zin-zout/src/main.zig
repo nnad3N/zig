@@ -21,9 +21,11 @@ pub fn cin(comptime T: type) !T {
     //     else => unreachable,
     // };
 
-    std.log.info("{s}", .{line});
+    // std.log.info("{s}", .{line});
+    var arr: [100]u8 = undefined;
+    const slice = arr[0..];
 
-    return line;
+    return std.fmt.bufPrint(slice, "{s}", .{line});
 
     // return "10";
 

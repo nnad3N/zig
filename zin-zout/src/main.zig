@@ -7,28 +7,27 @@ pub fn cin(comptime T: type) !T {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    const delimiter = if(@import("builtin").os.tag == .windows) '\r' else '\n';
+    const delimiter = if (@import("builtin").os.tag == .windows) '\r' else '\n';
 
-    const line: [] u8 = try stdin.readUntilDelimiterAlloc(allocator, delimiter, 512);
-    defer allocator.free(line);
+    const line = try stdin.readUntilDelimiterAlloc(allocator, delimiter, 512);
 
-    const info = @typeInfo(T);
+    defer {
+        allocator.free(line);
+        const leaked = gpa.deinit();
+        if (leaked) @panic("GPA leak");
+    }
 
-    // std.log.info("{any}", .{info});
-
-    return switch(info){
+    return switch(@typeInfo(T)){
         .Int => try std.fmt.parseInt(T, line, 10),
-        .Float => try std.fmt.parseFloat(T, line),
-        .Pointer => try std.fmt.allocPrint(allocator, "{s}", .{line}),
+        .Float => try std.fmt.parseFloat(T, line),    
         else => unreachable,
     };
 }
 
 pub fn main() anyerror!void {
-    const out = try cin([]i32);
-    const out2 = try cin([]const u8);
+    const out = try cin(u32);
 
-    std.log.info("one: {s} \n two: {s}", .{out, out2});
+    std.log.info("{d}", .{out});
 }
 
 // test "basic test" {

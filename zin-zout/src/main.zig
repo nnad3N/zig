@@ -12,33 +12,23 @@ pub fn cin(comptime T: type) !T {
     const line: [] u8 = try stdin.readUntilDelimiterAlloc(allocator, delimiter, 512);
     defer allocator.free(line);
 
-    // const info = @typeInfo(T);
+    const info = @typeInfo(T);
 
-    // return switch(info){
-    //     .Int => std.fmt.parseInt(T, line, 10),
-    //     .Float => std.fmt.parseFloat(T, line),
-    //     .Pointer => line,
-    //     else => unreachable,
-    // };
+    // std.log.info("{any}", .{info});
 
-    // std.log.info("{s}", .{line});
-    var arr: [100]u8 = undefined;
-    const slice = arr[0..];
-
-    return std.fmt.bufPrint(slice, "{s}", .{line});
-
-    // return "10";
-
-    // if (line) |input| {
-    //     return std.fmt.parseInt(T, input, 10);
-    // } else {
-    //     return @as(T, 0);
-    // }
-
+    return switch(info){
+        .Int => try std.fmt.parseInt(T, line, 10),
+        .Float => try std.fmt.parseFloat(T, line),
+        .Pointer => try std.fmt.allocPrint(allocator, "{s}", .{line}),
+        else => unreachable,
+    };
 }
 
 pub fn main() anyerror!void {
-    std.log.info("{s}", .{try cin([]const u8)});
+    const out = try cin([]i32);
+    const out2 = try cin([]const u8);
+
+    std.log.info("one: {s} \n two: {s}", .{out, out2});
 }
 
 // test "basic test" {
